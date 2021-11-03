@@ -27,6 +27,7 @@
     <title>React App</title>
   </head>
   <body>
+    
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!--
@@ -40,4 +41,35 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+  <style>
+    body {
+      margin: 0
+    }
+    #root {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      justify-items: center;
+      height: 100vh;
+      flex-direction: column
+    }
+    #progress {
+      width: 320px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: #e1e3ea;
+      margin-top: 40px
+    }
+    #progress > div {
+      width: 320px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: #43425d;
+      animation: progressBar 5s ease-in-out;
+    }
+    @keyframes progressBar {
+      0% { width: 0; }
+      100% { width: 100%; }
+    }
+  </style>
 </html>

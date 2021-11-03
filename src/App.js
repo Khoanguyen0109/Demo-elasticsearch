@@ -1,24 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import routes from "./routes/routes";
+import { createBrowserHistory as createHistory } from "history";
+import { Router, Route } from "react-router-dom";
+
+import PublicRoute from "./routes/PublicRoutes";
+import ErrorPage from "./pages/ErrorPage/ErrorPage";
+import PrivateRoute from "./routes/PrivateRoute";
+import AuthDataProvider from "./Auth/AuthContext";
+
+const history = createHistory();
 
 function App() {
+  const privateRoutes = [];
+  const publicRoutes = [];
+
+  for (let i = 0; i < routes.length; i++) {
+    if (routes[i].private) {
+      privateRoutes.push(routes[i]);
+    } else {
+      publicRoutes.push(routes[i]);
+    }
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthDataProvider>
+      <Router history={history}>
+        {privateRoutes.map((route, index) => (
+          <PrivateRoute
+            key={index}
+            path={route.path}
+            exact={route.exact}
+            component={route.component}
+            routes={route.routes}
+          />
+        ))}
+        {publicRoutes.map((route, index) => (
+          <PublicRoute
+            key={index}
+            component={route.component}
+            path={route.path}
+            exact={route.exact}
+            routes={route.routes}
+          />
+        ))}
+        {/* <Route path="*" component={ErrorPage} isPublic={true} /> */}
+      </Router>
+    </AuthDataProvider>
   );
 }
 
