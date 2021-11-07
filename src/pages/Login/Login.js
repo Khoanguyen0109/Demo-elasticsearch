@@ -23,7 +23,7 @@ function Login() {
   const [passwordType, setPasswordType] = useState(1)
   const [isBusy, setIsBusy] = useState(false);
   const LoginSchema = Yup.object().shape({
-    identity: Yup.string()
+    email: Yup.string()
       .email('Please enter a valid email address.')
       .required('Please enter your email address.'),
     password: Yup.string().required('Please enter your password.'),
@@ -52,13 +52,13 @@ function Login() {
       {({ errors, touched, values }) => {
         return <Form className={classes.root}>
           <FormGroup >
-            <Field name='identity'
+          <Field name='email'
               required
               as={TextField}
               type='email'
               placeholder='Email'
-              error={errors.identity && touched.identity}
-              errorMessage={errors.identity && touched.identity ? <div>{errors.identity}</div> : false}
+              error={errors.email && touched.email}
+              helperText={errors.email && touched.email ? <div>{errors.email}</div> : false}
               label={<span>Email</span>}
             />
             <Field name='password'
@@ -67,17 +67,20 @@ function Login() {
               placeholder='Password'
               type={passwordType ? 'password' : 'text'}
               error={errors.password && touched.password}
-              errorMessage={errors.password && touched.password ? <div>{errors.password}</div> : false}
-              endAdornment={
-                <InputAdornment position='end'>
-                  <IconButton
-                    aria-label='toggle password visibility'
-                    onClick={() => { this.setState({ passwordType: !passwordType }); }}
-                  >
-                    {passwordType ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
+              helperText={errors.password && touched.password ? <div>{errors.password}</div> : false}
+              InputProps={{
+                endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        aria-label='toggle password visibility'
+                        onClick={() => { this.setState({ passwordType: !passwordType }); }}
+                      >
+                        {passwordType ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                )
+              }}
+             
               label={<span>Password</span>}
             />
          

@@ -1,6 +1,6 @@
 import routes from "./routes/routes";
 import { createBrowserHistory as createHistory } from "history";
-import { Router, Route } from "react-router-dom";
+import { Router, Route ,Switch } from "react-router-dom";
 
 import PublicRoute from "./routes/PublicRoutes";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
@@ -22,7 +22,10 @@ function App() {
   }
   return (
     <AuthDataProvider>
+
       <Router history={history}>
+      <Switch>
+
         {privateRoutes.map((route, index) => (
           <PrivateRoute
             key={index}
@@ -41,8 +44,11 @@ function App() {
             routes={route.routes}
           />
         ))}
-        {/* <Route path="*" component={ErrorPage} isPublic={true} /> */}
+        <Route path="*" exact={true} component={ErrorPage} isPublic={true} />
+        </Switch>
+
       </Router>
+
     </AuthDataProvider>
   );
 }
