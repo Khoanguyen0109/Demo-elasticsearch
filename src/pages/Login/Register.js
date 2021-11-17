@@ -9,6 +9,8 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Layout2 from '../../layouts/Layout2';
 import { makeStyles } from '@mui/styles';
+import axios from 'axios';
+import { END_POINT } from './constant';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,19 +31,30 @@ function Register() {
       .email('Please enter a valid email address.')
       .required('Please enter your email address.'),
     password: Yup.string().required('Please enter your password.'),
+    confirmPassword: Yup.string()
+    .required('Please enter your password.')
+    .oneOf([Yup.ref('password'), null], 'Confirmed password does not match the password above.'),
     remember: Yup.boolean()
   });
-  const onSubmit = () =>{
-
+  const onSubmit = async (values) =>{
+    const res = await axios({
+      method: END_POINT.register.method,
+      url: END_POINT.register.url,
+      data: {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password
+      }
+    })
+    console.log('res', res)
   };
   return (
     <Layout2>
 
 <Formik
       initialValues={{
-        identity: '',
         password: '',
-        remember: true
       }}
       validationSchema={RegisterSchema}
       onSubmit={(values) => {

@@ -6,8 +6,10 @@ import { styled, alpha } from "@mui/material/styles";
 
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
-import { Button, Grid, Skeleton } from "@mui/material";
+import { Button, FormControl, Grid, Skeleton, Typography } from "@mui/material";
 import FileList from "./FileList";
+import axios from "axios";
+import { END_POINT, END_POINT_ES } from "./constants";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -51,14 +53,84 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function MainPage() {
   const [isFetching, setIsFetching] = useState(false);
-  const [fileList, setFileList] = useState([1]);
+  const [fileList, setFileList] = useState([]);
+  const [search, setSearch] = useState('')
+  const [timeToFind, setTimeToFind] = useState()
+  const [totalFile, setTotalFile] = useState()
+  const getAllFile = async ()=>{
+    const res = await axios({
+      method: END_POINT.get_documents.method,
+      url: END_POINT.get_documents.url,
+    });
+    setFileList(res.data.documents);
+    console.log("res", res);
+  }
+
+  const getFileByES = async () =>{
+    const res = await axios({
+      method: END_POINT_ES.get_all.method,
+      url: END_POINT_ES.get_all.url,
+      data: {
+        ...END_POINT_ES.get_all.params
+      }
+    })
+    setFileList(res.data.hits.hits)
+    setTotalFile(res.data.hits.total.value)
+    setTimeToFind(res.data.took)
+
+    return res
+  }
+  const searchFile = async ()=>{
+    const data = {...END_POINT_ES.search_file.params(search)}
+    const res =  await axios({
+      method: END_POINT_ES.search_file.method,
+      url : END_POINT_ES.search_file.url,
+      data: data
+    })
+    setFileList(res.data.hits.hits)
+    setTotalFile(res.data.hits.total.value)
+    setTimeToFind(res.data.took)
+  }
   useEffect(() => {
     //fetching file
+    // getAllFile();
+    getFileByES()
   }, []);
+  
+  const uploadFile = async (e) => {
+    const file = e.target.files[0];
+    const data = new FormData();
+    const res = await axios({
+      method: END_POINT.upload.method,
+      url: END_POINT.upload.url,
+      data,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if(res){
+      getFileByES()
+    }
+  };
+
+  const onChange = (e) =>{
+    setSearch(e.target.value)
+  
+  }
+  const onSubmit = async(e) =>{
+    e.preventDefault()
+   if(search === ''){
+     getFileByES()
+   }else{
+    searchFile();
+   }
+
+  }
+  console.log('fileList', fileList)
 
   return (
     <Layout>
-      <Box mb={2}>
+        <form onSubmit={onSubmit}>
+        <Box mb={2} display='flex' >
+
         <Search>
           <SearchIconWrapper>
             <SearchIcon />
@@ -66,32 +138,50 @@ function MainPage() {
           <StyledInputBase
             placeholder="Search…"
             inputProps={{ "aria-label": "search" }}
+            onChange={onChange}
           />
         </Search>
+        <Button type='submit'>
+          Search
+        </Button>
       </Box>
+      </form>
+
       <Box ml={3}>
         <input
-          style={{ display: "none" }}
+          // style={{ display: "none" }}
           id="contained-button-file"
           type="file"
+          onChange={uploadFile}
         />
-        <label htmlFor="contained-button-file">
-          <Button variant="contained" color="primary" component="span">
+        {/* <label htmlFor="contained-button-file">
+          <Button variant="contained" color="primary" component="span" > 
             Upload
           </Button>
-        </label>
+        </label> */}
+      </Box>
+
+      <Box>
+        <Typography variant="h6">
+          Total File: {totalFile}
+        </Typography>
+      </Box>
+      <Box>
+        <Typography variant="h6">
+          Time to find: {timeToFind} millisecond
+        </Typography>
       </Box>
       <Box ml={3} mt={4}>
         {isFetching ? (
           <Grid container justify="flex-start" spacing={3}>
             {[0, 1, 2, 3].map((item, index) => (
-          <Grid item xs={4} sm={3} md={3} lg={3} xl={1} key={index}>
-          <Skeleton variant="rect" height={200} />
+              <Grid item xs={4} sm={3} md={3} lg={3} xl={1} key={index}>
+                <Skeleton variant="rect" height={200} />
               </Grid>
             ))}
           </Grid>
         ) : (
-          <FileList fileList={fileList} />
+          <FileList fileList={fileList} setFileList={setFileList} />
         )}
       </Box>
 

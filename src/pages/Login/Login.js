@@ -4,11 +4,13 @@ import TextField from '@mui/material/TextField';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Box } from '@mui/system';
-
+import {Link } from 'react-router-dom';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Layout2 from '../../layouts/Layout2';
 import { makeStyles } from '@mui/styles';
+import axios from 'axios';
+import { END_POINT } from './constant';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,7 +31,17 @@ function Login() {
     password: Yup.string().required('Please enter your password.'),
     remember: Yup.boolean()
   });
-  const onSubmit = () =>{
+  const onSubmit = async (values) =>{
+    console.log('values', values)
+    const res = await axios({
+      method: END_POINT.login.method,
+      url: END_POINT.login.url,
+      data: {
+        email: values.email,
+        password: values.password
+      }
+    })
+    console.log('res', res)
 
   };
   return (
@@ -37,9 +49,8 @@ function Login() {
 
 <Formik
       initialValues={{
-        identity: '',
         password: '',
-        remember: true
+        email: ''
       }}
       validationSchema={LoginSchema}
       onSubmit={(values) => {
@@ -73,7 +84,7 @@ function Login() {
                     <InputAdornment position='end'>
                       <IconButton
                         aria-label='toggle password visibility'
-                        onClick={() => { this.setState({ passwordType: !passwordType }); }}
+                        onClick={() => setPasswordType(!passwordType)}
                       >
                         {passwordType ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -85,6 +96,10 @@ function Login() {
             />
          
           </FormGroup>
+          <Typography>
+            don't have account , register here <span> <Link to="/register">Register</Link>
+</span>
+          </Typography>
           <Box style={{ textAlign: 'center' }} className='btn-group' mt={1}>
             <Button color='primary' variant='contained' type='submit' disabled={isBusy}>Sign in</Button>
             {isBusy &&
