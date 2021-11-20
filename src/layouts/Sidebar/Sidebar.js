@@ -50,6 +50,8 @@ function Sidebar(props) {
             {openSideBar ? "Logo" : "L"} 
           </Box>
           <Box>
+
+            
             {/* <IconButton
               onClick={toggleSidebar}
               className={clsx(classes.iconButton, {
