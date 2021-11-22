@@ -11,7 +11,9 @@ import Layout2 from '../../layouts/Layout2';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { END_POINT } from './constant';
-
+import { useAuthDataContext } from '../../Auth/AuthContext';
+import { ROUTE } from '../Main/routes';
+import { useHistory } from 'react-router';
 const useStyles = makeStyles(theme => ({
   root: {
     '& .MuiFormControl-root':{
@@ -22,6 +24,8 @@ const useStyles = makeStyles(theme => ({
 
 function Login() {
   const classes = useStyles()
+  const authContext = useAuthDataContext()
+  const history = useHistory();
   const [passwordType, setPasswordType] = useState(1)
   const [isBusy, setIsBusy] = useState(false);
   const LoginSchema = Yup.object().shape({
@@ -32,7 +36,6 @@ function Login() {
     remember: Yup.boolean()
   });
   const onSubmit = async (values) =>{
-    console.log('values', values)
     const res = await axios({
       method: END_POINT.login.method,
       url: END_POINT.login.url,
@@ -41,8 +44,10 @@ function Login() {
         password: values.password
       }
     })
-    console.log('res', res)
-
+    console.log(`res.data`, res.data)
+    authContext.setData({currentUser: res.data.user }, 'user')
+    localStorage.setItem('access_token', res.data.token)
+    return history.push(ROUTE.DEFAULT)
   };
   return (
     <Layout2>

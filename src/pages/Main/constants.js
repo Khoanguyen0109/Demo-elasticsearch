@@ -34,7 +34,8 @@ export const END_POINT_ES ={
         params: (search)=> ({
             query: {
                 match : {
-                    name: search
+                    name: search,
+                    
                 }
             }
         })

@@ -12,9 +12,11 @@ const PrivateRoute = ({ component, routerRoles, ...rest }) => {
   //   const finalComponent = user ? component : <Redirect to= />;
   // return null;
   // console.log('private', fetchingUser, currentUser, token);
+
   if (fetchingUser && token) {
     return <CircularProgress color='primary' />;
   }
+  console.log('currentUser', currentUser)
   if (isEmpty(currentUser)) {
     let to = ROUTE_AUTH.LOGIN;
     if (rest.to) {
@@ -23,6 +25,7 @@ const PrivateRoute = ({ component, routerRoles, ...rest }) => {
     return <Redirect to={to} />;
   }
   const hasPermission = !!currentUser;
+  console.log('has', hasPermission)
   if (!hasPermission) {
     return (
       <ErrorPage

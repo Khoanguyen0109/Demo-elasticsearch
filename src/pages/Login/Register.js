@@ -11,6 +11,9 @@ import Layout2 from '../../layouts/Layout2';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { END_POINT } from './constant';
+import { useHistory } from 'react-router';
+import { ROUTE_AUTH } from './routes';
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,6 +25,8 @@ const useStyles = makeStyles(theme => ({
 
 function Register() {
   const classes = useStyles()
+  const history = useHistory()
+  const {enqueueSnackbar} = useSnackbar();
   const [passwordType, setPasswordType] = useState(1)
   const [isBusy, setIsBusy] = useState(false);
   const RegisterSchema = Yup.object().shape({
@@ -37,17 +42,25 @@ function Register() {
     remember: Yup.boolean()
   });
   const onSubmit = async (values) =>{
-    const res = await axios({
-      method: END_POINT.register.method,
-      url: END_POINT.register.url,
-      data: {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
-        password: values.password
-      }
-    })
-    console.log('res', res)
+    try {
+      const res = await axios({
+        method: END_POINT.register.method,
+        url: END_POINT.register.url,
+        data: {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          password: values.password
+        }
+      })
+      enqueueSnackbar("Successfully " , {
+        variant: 'success',
+      })
+      history.push(ROUTE_AUTH.LOGIN)
+    } catch (error) {
+      
+    }
+
   };
   return (
     <Layout2>

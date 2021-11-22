@@ -6,6 +6,7 @@ import PublicRoute from "./routes/PublicRoutes";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
 import PrivateRoute from "./routes/PrivateRoute";
 import AuthDataProvider from "./Auth/AuthContext";
+import { SnackbarProvider } from "notistack";
 
 const history = createHistory();
 
@@ -22,6 +23,7 @@ function App() {
   }
   return (
     <AuthDataProvider>
+                    <SnackbarProvider maxSnack={3}>
 
       <Router history={history}>
       <Switch>
@@ -48,7 +50,7 @@ function App() {
         </Switch>
 
       </Router>
-
+      </SnackbarProvider>
     </AuthDataProvider>
   );
 }

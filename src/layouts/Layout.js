@@ -21,6 +21,8 @@ import { useHistory, useLocation } from 'react-router';
 import { isArray } from 'lodash-es';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { AuthDataContext } from '../Auth/AuthContext';
+import { removeToken } from '../utils';
+import { ROUTE_AUTH } from '../pages/Login/routes';
 const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
@@ -98,7 +100,12 @@ export default function Layout(props) {
     localStorage.setItem('openSideBarStatus', !open);
   };
 
+  const logOut =() =>{
+    removeToken()
+    history.push(ROUTE_AUTH.LOGIN)
+  }
  
+
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -129,7 +136,8 @@ export default function Layout(props) {
           </Typography>
           <IconButton sx ={{
             color: 'white'
-          }}>
+          }}
+          onClick={logOut} >
             <LogoutIcon/>
           </IconButton>
           </Box>

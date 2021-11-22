@@ -10,6 +10,8 @@ import { Button, FormControl, Grid, Skeleton, Typography } from "@mui/material";
 import FileList from "./FileList";
 import axios from "axios";
 import { END_POINT, END_POINT_ES } from "./constants";
+import { useSnackbar } from "notistack";
+import { useAuthDataContext } from "../../Auth/AuthContext";
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -53,17 +55,30 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function MainPage() {
   const [isFetching, setIsFetching] = useState(false);
+  const {currentUser} = useAuthDataContext()
+  const { enqueueSnackbar } = useSnackbar();
   const [fileList, setFileList] = useState([]);
   const [search, setSearch] = useState('')
   const [timeToFind, setTimeToFind] = useState()
   const [totalFile, setTotalFile] = useState()
   const getAllFile = async ()=>{
+    const config = {
+      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+  };
     const res = await axios({
       method: END_POINT.get_documents.method,
       url: END_POINT.get_documents.url,
+      // config
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     });
     setFileList(res.data.documents);
     console.log("res", res);
+  }
+
+  const setFiles =(data) =>{ 
+    setFileList(data.hits.hits)
+    setTotalFile(data.hits.total.value)
+    setTimeToFind(data.took)
   }
 
   const getFileByES = async () =>{
@@ -71,12 +86,16 @@ function MainPage() {
       method: END_POINT_ES.get_all.method,
       url: END_POINT_ES.get_all.url,
       data: {
-        ...END_POINT_ES.get_all.params
-      }
+        ...END_POINT_ES.get_all.params,
+        
+      },
+      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+
     })
-    setFileList(res.data.hits.hits)
-    setTotalFile(res.data.hits.total.value)
-    setTimeToFind(res.data.took)
+    setFiles(res.data)
+    // setFileList(res.data.hits.hits)
+    // setTotalFile(res.data.hits.total.value)
+    // setTimeToFind(res.data.took)
 
     return res
   }
@@ -85,11 +104,15 @@ function MainPage() {
     const res =  await axios({
       method: END_POINT_ES.search_file.method,
       url : END_POINT_ES.search_file.url,
-      data: data
+      data: data,
+      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+
     })
-    setFileList(res.data.hits.hits)
-    setTotalFile(res.data.hits.total.value)
-    setTimeToFind(res.data.took)
+    setFiles(res.data)
+
+    // setFileList(res.data.hits.hits)
+    // setTotalFile(res.data.hits.total.value)
+    // setTimeToFind(res.data.took)
   }
   useEffect(() => {
     //fetching file
@@ -100,15 +123,40 @@ function MainPage() {
   const uploadFile = async (e) => {
     const file = e.target.files[0];
     const data = new FormData();
-    const res = await axios({
-      method: END_POINT.upload.method,
-      url: END_POINT.upload.url,
-      data,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    if(res){
-      getFileByES()
+    data.append('document', file)
+    // data.append('userId', currentUser.id );
+    try {
+      const res = await axios({
+        method: END_POINT.upload.method,
+        url: END_POINT.upload.url,
+        data,
+        headers: { "Content-Type": "multipart/form-data", "Authorization" : `Bearer ${localStorage.getItem('access_token')}`},
+      });
+          enqueueSnackbar("Successfully " , {
+            variant: 'success',
+          })
+      if(res){
+        getFileByES()
+      }
+    } catch (error) {
+      console.log('object', error.response.status)
+      switch (error.response.status) {
+        case 400: 
+          enqueueSnackbar(error.response.data.message , {
+            variant: 'warning',
+          })
+          break;
+        case 500:
+          enqueueSnackbar("Something went wring " , {
+            variant: 'error',
+          })
+          break 
+        default:
+          break;
+      }
     }
+
+
   };
 
   const onChange = (e) =>{
