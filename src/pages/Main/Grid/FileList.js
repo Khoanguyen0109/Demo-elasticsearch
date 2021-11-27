@@ -1,7 +1,7 @@
 import { Grid } from "@mui/material";
 import axios from "axios";
 import React from "react";
-import { END_POINT } from "./constants";
+import { END_POINT } from "../constants";
 import File from "./File";
 function FileList(props) {
   const { fileList, setFileList } = props;

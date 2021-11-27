@@ -6,12 +6,26 @@ import { styled, alpha } from "@mui/material/styles";
 
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
-import { Button, FormControl, Grid, Skeleton, Typography } from "@mui/material";
-import FileList from "./FileList";
+import {
+  Backdrop,
+  Button,
+  Checkbox,
+  CircularProgress,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  Skeleton,
+  Typography,
+} from "@mui/material";
+import FileList from "./Grid/FileList";
 import axios from "axios";
 import { END_POINT, END_POINT_ES } from "./constants";
 import { useSnackbar } from "notistack";
 import { useAuthDataContext } from "../../Auth/AuthContext";
+import TableFile from "./Table/TableFile";
+import { Document, Page } from 'react-pdf';
+
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
   borderRadius: theme.shape.borderRadius,
@@ -55,185 +69,169 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function MainPage() {
   const [isFetching, setIsFetching] = useState(false);
-  const {currentUser} = useAuthDataContext()
+  const { currentUser } = useAuthDataContext();
   const { enqueueSnackbar } = useSnackbar();
   const [fileList, setFileList] = useState([]);
-  const [search, setSearch] = useState('')
-  const [timeToFind, setTimeToFind] = useState()
-  const [totalFile, setTotalFile] = useState()
-  const getAllFile = async ()=>{
-    const config = {
-      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+  const [search, setSearch] = useState("");
+  const [timeToFind, setTimeToFind] = useState();
+  const [totalFile, setTotalFile] = useState();
+  const [searchFields, setSearchFields] = useState({
+    name: true,
+    content: false,
+    size: false,
+    filePath: false,
+  });
+
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+
+  const setFiles = (data) => {
+    setFileList(data);
+    setTotalFile(data.length);
   };
-    const res = await axios({
-      method: END_POINT.get_documents.method,
-      url: END_POINT.get_documents.url,
-      // config
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-    });
-    setFileList(res.data.documents);
-    console.log("res", res);
-  }
 
-  const setFiles =(data) =>{ 
-    setFileList(data.hits.hits)
-    setTotalFile(data.hits.total.value)
-    setTimeToFind(data.took)
-  }
-
-  const getFileByES = async () =>{
-    const res = await axios({
-      method: END_POINT_ES.get_all.method,
-      url: END_POINT_ES.get_all.url,
-      data: {
-        ...END_POINT_ES.get_all.params,
-        
-      },
-      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-
-    })
-    setFiles(res.data)
-    // setFileList(res.data.hits.hits)
-    // setTotalFile(res.data.hits.total.value)
-    // setTimeToFind(res.data.took)
-
-    return res
-  }
-  const searchFile = async ()=>{
-    const data = {...END_POINT_ES.search_file.params(search)}
-    const res =  await axios({
-      method: END_POINT_ES.search_file.method,
-      url : END_POINT_ES.search_file.url,
-      data: data,
-      header: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-
-    })
-    setFiles(res.data)
-
-    // setFileList(res.data.hits.hits)
-    // setTotalFile(res.data.hits.total.value)
-    // setTimeToFind(res.data.took)
-  }
-  useEffect(() => {
-    //fetching file
-    // getAllFile();
-    getFileByES()
-  }, []);
-  
-  const uploadFile = async (e) => {
-    const file = e.target.files[0];
-    const data = new FormData();
-    data.append('document', file)
-    // data.append('userId', currentUser.id );
+  const initDocument = async () => {
     try {
-      const res = await axios({
-        method: END_POINT.upload.method,
-        url: END_POINT.upload.url,
-        data,
-        headers: { "Content-Type": "multipart/form-data", "Authorization" : `Bearer ${localStorage.getItem('access_token')}`},
-      });
-          enqueueSnackbar("Successfully " , {
-            variant: 'success',
-          })
-      if(res){
-        getFileByES()
-      }
-    } catch (error) {
-      console.log('object', error.response.status)
-      switch (error.response.status) {
-        case 400: 
-          enqueueSnackbar(error.response.data.message , {
-            variant: 'warning',
-          })
-          break;
-        case 500:
-          enqueueSnackbar("Something went wring " , {
-            variant: 'error',
-          })
-          break 
-        default:
-          break;
-      }
+      setLoadingDocuments(true);
+      // const reCreate = await axios({
+      //   method: END_POINT.recreate.method,
+      //   url: END_POINT.recreate.url
+      // })
+      // const res = await axios({
+      //   method: END_POINT.init_document.method,
+      //   url: END_POINT.init_document.url
+      // })
+      getFile();
+      setLoadingDocuments(false);
+    } catch (e) {
+      setLoadingDocuments(false);
     }
-
-
   };
 
-  const onChange = (e) =>{
-    setSearch(e.target.value)
-  
-  }
-  const onSubmit = async(e) =>{
-    e.preventDefault()
-   if(search === ''){
-     getFileByES()
-   }else{
-    searchFile();
-   }
+  const getFile = async () => {
+    const res = await axios({
+      method: END_POINT.get_all.method,
+      url: END_POINT.get_all.url,
+    });
+    setFiles(res.data);
+  };
+  useEffect(() => {
+    initDocument();
+  }, []);
 
-  }
-  console.log('fileList', fileList)
+  const onChange = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const onChangeSearchField = (event) => {
+    setSearchFields({
+      ...searchFields,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  console.log('totalFile', totalFile)
+  const searchFile = async () => {
+    const res = await axios({
+      method: END_POINT.search.method,
+      url: END_POINT.search.url,
+      data: {
+        searchTerm: search,
+        fields: Object.keys(searchFields).filter(key=> !!searchFields[key]),
+      },
+    });
+    setFiles(res.data)
+  };
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (search === "") {
+      getFile();
+      //  getFileByES()
+    } else {
+      searchFile();
+    }
+  };
+
+  const { name, size, content, filePath } = searchFields;
 
   return (
     <Layout>
-        <form onSubmit={onSubmit}>
-        <Box mb={2} display='flex' >
-
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search…"
-            inputProps={{ "aria-label": "search" }}
-            onChange={onChange}
-          />
-        </Search>
-        <Button type='submit'>
-          Search
-        </Button>
-      </Box>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loadingDocuments}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <form onSubmit={onSubmit}>
+        <Box mb={2} display="flex">
+          <Search>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ "aria-label": "search" }}
+              onChange={onChange}
+            />
+          </Search>
+          <Button type="submit">Search</Button>
+        </Box>
       </form>
 
-      <Box ml={3}>
-        <input
-          // style={{ display: "none" }}
-          id="contained-button-file"
-          type="file"
-          onChange={uploadFile}
+      <Box>
+        <Typography variant="h6">Search by: </Typography>
+      </Box>
+      <FormGroup
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={name}
+              onChange={onChangeSearchField}
+              name="name"
+            />
+          }
+          label="Name"
         />
-        {/* <label htmlFor="contained-button-file">
-          <Button variant="contained" color="primary" component="span" > 
-            Upload
-          </Button>
-        </label> */}
-      </Box>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={size}
+              onChange={onChangeSearchField}
+              name="size"
+            />
+          }
+          label="Size"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={content}
+              onChange={onChangeSearchField}
+              name="content"
+            />
+          }
+          label="Content"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filePath}
+              onChange={onChangeSearchField}
+              name="filePath"
+            />
+          }
+          label="File Path"
+        />
+      </FormGroup>
 
       <Box>
-        <Typography variant="h6">
-          Total File: {totalFile}
-        </Typography>
+        <Typography variant="h6">Total hits: {totalFile}</Typography>
       </Box>
-      <Box>
-        <Typography variant="h6">
-          Time to find: {timeToFind} millisecond
-        </Typography>
-      </Box>
-      <Box ml={3} mt={4}>
-        {isFetching ? (
-          <Grid container justify="flex-start" spacing={3}>
-            {[0, 1, 2, 3].map((item, index) => (
-              <Grid item xs={4} sm={3} md={3} lg={3} xl={1} key={index}>
-                <Skeleton variant="rect" height={200} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <FileList fileList={fileList} setFileList={setFileList} />
-        )}
-      </Box>
-
-      {/* <MyCoursesList /> */}
+      {!fileList ? <CircularProgress /> : <TableFile data={fileList}  search={search} searchContent={searchFields.content} />}
     </Layout>
   );
 }

@@ -14,6 +14,23 @@ export const END_POINT = {
     upload : {
         method: 'POST',
         url: `${process.env.REACT_APP_API_URL}/documents/upload`
+    },
+    recreate: {
+        method: 'POST',
+        url: `${process.env.REACT_APP_API_URL}/index/recreate`
+    },
+    init_document: {
+        method: 'GET',
+        url: `${process.env.REACT_APP_API_URL}/documents/init`,
+
+    },
+    get_all: {
+        method: 'GET',
+        url: `${process.env.REACT_APP_API_URL}/documents`,
+    },
+    search: {
+        method: 'POST',
+        url: `${process.env.REACT_APP_API_URL}/documents/search`,
     }
 };
 
@@ -39,5 +56,7 @@ export const END_POINT_ES ={
                 }
             }
         })
-    }
+    },
+
+
 }
