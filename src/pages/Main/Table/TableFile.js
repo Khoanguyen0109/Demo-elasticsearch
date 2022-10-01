@@ -66,7 +66,7 @@ function Row(props) {
         <TableCell align="left">{row.filePath}</TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Paper
               sx={{
@@ -105,7 +105,7 @@ function TableFile(props) {
   const { data, search, searchContent } = props;
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }}>
-      <TableContainer sx={{ maxHeight: 440 }}>
+      <TableContainer sx={{ maxHeight: 400 }}>
         <Table stickyHeader aria-label="sticky table" aria-label="simple table">
           <TableHead>
             <TableRow>

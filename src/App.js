@@ -7,6 +7,9 @@ import ErrorPage from "./pages/ErrorPage/ErrorPage";
 import PrivateRoute from "./routes/PrivateRoute";
 import AuthDataProvider from "./Auth/AuthContext";
 import { SnackbarProvider } from "notistack";
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import frLocale from 'date-fns/locale/fr';
 
 const history = createHistory();
 
@@ -22,6 +25,8 @@ function App() {
     }
   }
   return (
+    <LocalizationProvider dateAdapter={AdapterDateFns} locale={frLocale}> 
+
     <AuthDataProvider>
                     <SnackbarProvider maxSnack={3}>
 
@@ -52,6 +57,8 @@ function App() {
       </Router>
       </SnackbarProvider>
     </AuthDataProvider>
+    </LocalizationProvider>
+
   );
 }
 

@@ -3,9 +3,9 @@ import { ReactComponent as IcnMyCourses } from '../../assets/icn_teach.svg';
 
 
 export const ROUTE = {
-    DEFAULT: '/main',
+    DEFAULT: '/',
     USER: '/user'
-
+// 
 };
 
 const routes = [
@@ -22,19 +22,19 @@ const routes = [
         }
 
     },
-    {
-        path: ROUTE.USER,
-        component: MainPage,
-        exact: true,
-        // private: true,
-        menu: {
-            title: 'User',
-            icon: IcnMyCourses,
-            group: 'noname',
-            order: 1
-        }
+    // {
+    //     path: ROUTE.USER,
+    //     component: MainPage,
+    //     exact: true,
+    //     // private: true,
+    //     menu: {
+    //         title: 'User',
+    //         icon: IcnMyCourses,
+    //         group: 'noname',
+    //         order: 1
+    //     }
 
-    },
+    // },
 
     // {
     //     path: '/sso/:token',
